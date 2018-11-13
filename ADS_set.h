@@ -39,11 +39,6 @@ private:
   size_type sz{0}, table_size = N; //variable to keep track of the size and the maximum size of the table.
   float max_allowed {0.7};
 
-  value_type last_erased;
-  value_type last_unsuccessful;
-
-  bool was_unsuccessful = false;
-
   size_type hash_idx(const key_type& k) const {
      return hasher{}(k) % table_size;
   }
@@ -244,12 +239,9 @@ public:
       } else {
         delete_in_position(key);
       }
-      last_erased = key;
       --sz;
       return 1;
     }
-    was_unsuccessful = true;
-    last_unsuccessful = key;
     return 0;
   }
 
@@ -290,104 +282,6 @@ public:
 
   friend bool operator!=(const ADS_set& lhs, const ADS_set& rhs) {
     return !(lhs == rhs);
-  }
-
-  value_type get_last_erased(){
-    return last_erased;
-  }
-
-  value_type get_last_unsuccessful() {
-    return last_unsuccessful;
-  }
-
-  size_type z() const {
-    if(last_erased == -1){
-      throw std::runtime_error("no elements have been erased yet!");
-    }
-    int counter = 0;
-    for(int i = 0; i < table_size; i++) {
-      Head* head = &(table[i]);
-      for(Node* node = head->first_node; node != nullptr; node = node->next){
-        if(std::less<key_type>{}(node->key, last_erased)){
-          counter++;
-        }
-      }
-    }
-    return counter;
-  }
-
-  key_type y() const {
-    value_type min;
-    for(int i = 0; i < table_size; i++) {
-      Head* head = &(table[i]);
-      for(Node* node = head->first_node; node != nullptr; node = node->next){
-        if(std::less<key_type>{}(last_unsuccessful, node->key)){
-          min = node->key;
-        }
-      }
-    }
-    for(int i = 0; i < table_size; i++) {
-      Head* head = &(table[i]);
-      for(Node* node = head->first_node; node != nullptr; node = node->next){
-        if(std::less<key_type>{}(node->key, min) && std::less<key_type>{}(last_unsuccessful, node->key)){
-          min = node->key;
-        }
-      }
-    }
-    return min;
-  }
-
-  const_iterator x(const key_type& k) const {
-    value_type max;
-    for(int i = 0; i < table_size; i++){
-      Head* head = &(table[i]);
-      for(Node* node = head->first_node; node != nullptr; node = node->next){
-        if(std::less<key_type>{}(node->key, k)){
-          max = node->key;
-        }
-      }
-    }
-
-    for(int i = 0; i < table_size; i++){
-      Head* head = &(table[i]);
-      for(Node* node = head->first_node; node != nullptr; node = node->next){
-        if(std::less<key_type>{}(node->key, k) && !std::less<key_type>{}(node->key, max)){
-          max = node->key;
-        }
-      }
-    }
-    return const_iterator{&(table[hash_idx(max)]), this, find_pos(max)};
-  }
-
-
-  friend bool func(const ADS_set& a, const ADS_set& b){
-    if(a.size() == 0 && b.size() == 0){
-      return true;
-    }
-    int counter = 0;
-    int counter2 = 0;
-    for(int i = 0; i < a.table_size; i++){
-      Head* head = &(a.table[i]);
-      for(Node* node = head->first_node; node != nullptr; node = node->next){
-        if(b.count(node->key) == 1){
-          counter++;
-        }
-      }
-    }
-
-    for(int i = 0; i < b.table_size; i++){
-      Head* head = &(b.table[i]);
-      for(Node* node = head->first_node; node != nullptr; node = node->next){
-        if(a.count(node->key) == 1){
-          counter2++;
-        }
-      }
-    }
-
-    if((counter * 100 / a.size()) >= 90 && (counter2 * 100 / b.size()) >= 90){
-      return true;
-    }
-    return false;
   }
 };
 

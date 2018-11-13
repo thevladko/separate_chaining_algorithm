@@ -108,7 +108,5 @@ int main() {
   cout << "___________________" << endl;
   cout << "___________________" << endl;
 
-  cout << func(s1, s2);
-
   return 0;
 }
